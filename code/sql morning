@@ -1,0 +1,48 @@
+Week1-day3 SQL assignment
+
+SELECT type, AVG(price) AS avg_price, MIN(price) AS min_price, MAX(price) AS max_price
+FROM meals
+WHERE date_part('month',dt)<3 AND date_part('year',dt)=2013
+GROUP BY type;
+
+
+%%JOins:
+SELECT * FROM users U JOIN events e ON u.userid=e.userid LIMIT 10;
+
+
+
+--1st one
+
+SELECT count(userid) , to_date(to_char(tmstmp, 'MM/DD/YYYY'), 'MM/DD/YYYY') as reg_date from registrations
+  group by reg_date order by reg_date
+
+--2nd
+select reg_day, count(reg_day) as reg_day_count from
+(SELECT count(userid) , to_date(to_char(tmstmp, 'MM/DD/YYYY'), 'MM/DD/YYYY') as reg_date,
+to_char(to_date(to_char(tmstmp, 'MM/DD/YYYY'), 'MM/DD/YYYY'), 'day') as reg_day from registrations
+group by reg_date order by reg_date) A group by reg_day order by reg_day_count desc limit 1
+
+-- 3rd one:
+SELECT userid, to_date(to_char(tmstmp, 'MM/DD/YYYY'), 'MM/DD/YYYY') AS login_date FROM logins
+WHERE tmstmp < to_date(to_char(tmstmp, '04/08/2014'), 'MM/DD/YYYY') ORDER BY tmstmp DESC;
+
+--4th
+select B.userid, count(A.userid) from
+(SELECT r.userid, date_part('doy',tmstmp) as rday
+FROM registrations r ) B
+join
+(SELECT r.userid, date_part('doy',tmstmp) as rday
+FROM registrations r ) A
+on B.rday = A.rday
+group by B.userid order by B.userid
+
+
+--5th
+select B.userid, B.mobile, B.web from
+(select * from
+(SELECT userid, sum(CASE WHEN type = 'mobile' THEN 1 ELSE 0 END) AS mobile,
+sum(CASE WHEN type = 'web' THEN 1 ELSE 0 END) AS web
+FROM logins group by userid  ORDER BY userid) A
+where mobile > web) B
+join test_group tg
+ON B.userid = tg.userid AND tg.grp = 'A'
